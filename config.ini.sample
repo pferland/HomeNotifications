@@ -1,3 +1,200 @@
+# ==============================================================================
+# HomeNotifications Configuration File (config.ini.sample)
+# ==============================================================================
+
 [DEFAULT]
 TOKEN = "0000000000:AAaaaaaaaaaa-bbbbbbbbbbb-cccccccccc"
 CHATID = 0000000000
+
+[telegram]
+# Bot token obtained from Telegram @BotFather
+bot_token = 0000000000:AAaaaaaaaaaa-bbbbbbbbbbb-cccccccccc
+
+# Destination Telegram chat ID (group, channel, or direct user ID)
+chat_id = 0000000000
+
+# Optional comma-separated list of admin user IDs allowed to run sensitive commands
+admin_ids = 
+
+# Message parse mode: HTML or Markdown
+parse_mode = HTML
+
+# Master switch to enable or disable all outgoing Telegram notifications
+enabled = true
+
+[system]
+# Path to device inventory definitions YAML
+devices_file = devices.yaml
+
+# Path to persistent runtime state JSON
+state_file = data/state.json
+
+# Log level: DEBUG, INFO, WARNING, ERROR
+log_level = INFO
+
+# Web Management UI Settings
+web_enabled = true
+web_host = 0.0.0.0
+web_port = 8085
+
+# ==============================================================================
+# Features Configuration
+#
+# notify_mode options:
+#   - immediate: Send alert right away as soon as detected
+#   - batched: Queue alerts and deliver together at batch_interval_seconds
+#   - on_change: Only send when status changes (e.g., UP -> DOWN, or IP change)
+#   - periodic: Send a status report on every interval cycle
+#   - never: Disable outgoing Telegram messages for this feature
+# ==============================================================================
+
+[feature:external_ip]
+enabled = true
+interval_seconds = 21600
+notify_mode = on_change
+batch_interval_seconds = 3600
+
+[feature:flag_status]
+enabled = true
+interval_seconds = 21600
+notify_mode = on_change
+batch_interval_seconds = 3600
+
+[feature:photolevel]
+# Requires I2C bus and PCF8591 ADC hardware
+enabled = false
+interval_seconds = 3600
+notify_mode = periodic
+batch_interval_seconds = 3600
+
+[feature:network_discovery]
+# Periodically sweeps subnets and detects new devices connecting to the network
+enabled = true
+# Scan frequency in seconds (300 = every 5 minutes)
+interval_seconds = 300
+# Subnets to scan: comma-separated CIDRs or 'auto' for local network auto-detection
+subnets = auto
+# Notify mode: immediate or batched
+notify_mode = immediate
+batch_interval_seconds = 300
+# Alert when an unknown MAC address is discovered
+alert_new_device = true
+# Alert when a previously seen device goes offline
+alert_device_offline = false
+# Offline threshold in seconds (1800 = 30 minutes without ARP response)
+offline_threshold_seconds = 1800
+
+[feature:device_monitor]
+# Monitors configured devices in devices.yaml (ping, TCP/HTTP services, SSH, SNMP)
+enabled = true
+# Check interval in seconds (60 = every minute)
+interval_seconds = 60
+# Notification mode: on_change (alerts on down/recovery), immediate, or batched
+notify_mode = on_change
+batch_interval_seconds = 300
+# Alert when device or service goes DOWN
+alert_on_down = true
+# Alert when device or service comes back UP
+alert_on_recovery = true
+# Minimum seconds before repeating the same alert (prevents message spamming)
+cooldown_seconds = 3600
+
+[feature:access_logs]
+# Parses SSH/auth logs for failed login attempts and brute force attacks
+enabled = true
+interval_seconds = 120
+notify_mode = immediate
+batch_interval_seconds = 300
+# Number of failed logins within log sample to trigger alert
+failed_login_threshold = 3
+
+[feature:presence]
+# Wi-Fi presence tracking for household members
+enabled = true
+interval_seconds = 60
+notify_mode = immediate
+batch_interval_seconds = 300
+alert_arrival = true
+alert_departure = true
+away_threshold_seconds = 900
+# Format: Name:MAC or Name:IP, separated by commas
+members = Paul:dc:a6:32:5c:27:2a
+
+[feature:ssl_cert]
+# SSL/TLS Certificate Expiration Watchdog
+enabled = true
+interval_seconds = 86400
+notify_mode = on_change
+batch_interval_seconds = 3600
+# Days before expiration to start warning
+warning_days = 14
+critical_days = 3
+alert_expired = true
+alert_expiring_soon = true
+custom_targets = 
+
+[feature:webhooks]
+# Smart home webhook ingestion endpoint (/api/webhook/notify)
+enabled = true
+interval_seconds = 300
+notify_mode = immediate
+batch_interval_seconds = 300
+api_key = homenotify-secret-key
+allow_unauthenticated = false
+
+[feature:speedtest]
+# Periodic internet speed and latency check
+enabled = false
+interval_seconds = 21600
+notify_mode = on_change
+batch_interval_seconds = 3600
+provider = ookla
+# Ookla server ID (leave empty for auto-selection of closest server)
+server_id = 
+server_location = 
+# IPs or Hostnames to measure latency against during test (comma-separated)
+latency_targets = 1.1.1.1, 8.8.8.8, 9.9.9.9
+min_download_mbps = 25.0
+min_upload_mbps = 5.0
+max_latency_ms = 120.0
+alert_on_degraded = true
+
+[feature:cisco_snmp]
+# Cisco SG300 and managed switch port status & bandwidth monitoring
+enabled = true
+interval_seconds = 120
+notify_mode = on_change
+batch_interval_seconds = 300
+device_id = core-switch
+alert_link_down = true
+alert_port_saturation = true
+saturation_threshold_mbps = 100.0
+monitored_ports = all
+
+[feature:ups_monitor]
+# UPS power outage and battery monitoring (probe, nut, or apcupsd)
+enabled = false
+interval_seconds = 60
+notify_mode = immediate
+batch_interval_seconds = 300
+ups_type = probe
+host = 127.0.0.1
+port = 3493
+alert_on_battery = true
+alert_low_battery = true
+alert_power_restored = true
+low_battery_percent = 25
+probe_host = 192.168.1.1
+
+[feature:night_owl]
+# Late-night network activity alerts during quiet hours
+enabled = false
+interval_seconds = 300
+notify_mode = immediate
+batch_interval_seconds = 300
+quiet_start = 01:00
+quiet_end = 05:30
+monitored_tags = kids,console,entertainment
+monitored_macs = 
+alert_active = true
+cooldown_minutes = 60

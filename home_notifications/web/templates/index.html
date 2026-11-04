@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeNotifications - Management UI</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- LEFT SIDE COLUMN (SIDEBAR) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">🏠</div>
+          <div class="logo-text">
+            <h2>HomeNotify</h2>
+            <span class="badge badge-primary">v2.0</span>
+          </div>
+        </div>
+        <div class="system-status-pill" id="sidebar-sys-status">
+          <span class="status-dot green"></span>
+          <span class="status-label">System Active</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">MONITORING</div>
+        <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#devices" class="nav-item" data-tab="devices">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          <span>Monitored Devices</span>
+          <span class="nav-badge" id="nav-badge-devices">0</span>
+        </a>
+        <a href="#discovery" class="nav-item" data-tab="discovery">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Network Discovery</span>
+          <span class="nav-badge" id="nav-badge-discovery">0</span>
+        </a>
+        <a href="#services" class="nav-item" data-tab="services">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Services & Ports</span>
+        </a>
+        <a href="#resources" class="nav-item" data-tab="resources">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          <span>System Resources</span>
+        </a>
+
+        <div class="nav-section-label">CONFIGURATION</div>
+        <a href="#features" class="nav-item" data-tab="features">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>Features & Alerts</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="bot-status-box">
+          <div class="bot-icon">✈️</div>
+          <div class="bot-info">
+            <span class="bot-title">Telegram Bot</span>
+            <span class="bot-state" id="telegram-status-label">Active Polling</span>
+          </div>
+        </div>
+        <div class="sidebar-meta">
+          <span>Uptime: <strong id="uptime-label">0m</strong></span>
+          <button id="theme-toggle" class="btn-icon" title="Toggle Dark/Light Mode">🌓</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+      <!-- TOP APP HEADER -->
+      <header class="app-header">
+        <div class="header-left">
+          <h1 id="view-title">Dashboard Overview</h1>
+          <nav aria-label="Breadcrumb" id="view-breadcrumb" class="breadcrumb">
+            <span class="breadcrumb-item breadcrumb-current">Home</span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item breadcrumb-current">Dashboard</span>
+          </nav>
+        </div>
+        <div class="header-actions">
+          <div class="refresh-control">
+            <span class="pulse-indicator"></span>
+            <select id="auto-refresh-select" class="select-sm">
+              <option value="10">Auto: 10s</option>
+              <option value="30" selected>Auto: 30s</option>
+              <option value="60">Auto: 60s</option>
+              <option value="0">Manual</option>
+            </select>
+          </div>
+          <button id="btn-trigger-scan" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon-svg"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Scan Subnet</span>
+          </button>
+          <button id="btn-check-devices" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon-svg"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <span>Check All Now</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTENT PANELS -->
+      <div class="content-body">
+        <!-- Global Notification Pause Alert Banner -->
+        <div id="global-pause-banner" class="alert-banner">
+          <div>
+            <span style="font-size: 15px; margin-right: 6px;">⏸️</span>
+            <span><strong>Telegram Alerts Paused:</strong> Notifications are snoozed for the next <span id="global-pause-timer">0m</span>.</span>
+          </div>
+          <button id="btn-global-resume" class="btn btn-sm btn-primary" style="padding: 3px 10px; font-size: 11px;">Resume Now</button>
+        </div>
+        <!-- 1. DASHBOARD TAB -->
+        <section id="panel-dashboard" class="tab-panel active">
+          <!-- KPI Cards Grid -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Monitored Devices</span>
+                <span class="kpi-icon blue">🖥️</span>
+              </div>
+              <div class="kpi-value" id="kpi-devices-total">0</div>
+              <div class="kpi-footer">
+                <span class="kpi-sub green" id="kpi-devices-up">0 UP</span>
+                <span class="kpi-separator">•</span>
+                <span class="kpi-sub red" id="kpi-devices-down">0 DOWN</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Discovered Hosts</span>
+                <span class="kpi-icon purple">🌐</span>
+              </div>
+              <div class="kpi-value" id="kpi-hosts-total">0</div>
+              <div class="kpi-footer">
+                <span class="kpi-sub" id="kpi-hosts-online">0 online in ARP cache</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">External Public IP</span>
+                <span class="kpi-icon emerald">🌍</span>
+              </div>
+              <div class="kpi-value mono" id="kpi-external-ip">Checking...</div>
+              <div class="kpi-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="kpi-sub green">✓ Change Monitoring Active</span>
+                <button id="btn-refresh-ip" class="btn-link" style="font-size: 11px; cursor: pointer; text-decoration: none;" title="Check public IP now">↻ Check</button>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Queued Batch Alerts</span>
+                <span class="kpi-icon amber">📬</span>
+              </div>
+              <div class="kpi-value" id="kpi-queued-alerts">0</div>
+              <div class="kpi-footer">
+                <button id="btn-flush-batch" class="btn-link">Flush Digest Now ➔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monitoring Features Quick Overview Tiles Section -->
+          <div class="dashboard-features-section" style="margin-top: 24px; margin-bottom: 24px;">
+            <div class="dashboard-section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">📡</span>
+                <div>
+                  <h3 style="margin: 0; font-size: 15.5px; font-weight: 600;">Monitoring Features & Status Overview</h3>
+                  <span style="font-size: 11.5px; color: var(--text-muted);">Real-time status, health metrics, and quick controls for each monitoring module</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <div class="features-filter-chips" id="dashboard-features-filter-chips" style="margin: 0;">
+                  <button type="button" class="chip active" data-dash-cat="all">All (<span id="dash-chip-count-all">0</span>)</button>
+                  <button type="button" class="chip" data-dash-cat="active">Active (<span id="dash-chip-count-active">0</span>)</button>
+                  <button type="button" class="chip" data-dash-cat="network">Network</button>
+                  <button type="button" class="chip" data-dash-cat="security">Security</button>
+                  <button type="button" class="chip" data-dash-cat="home">Home</button>
+                  <button type="button" class="chip" data-dash-cat="power">Power</button>
+                </div>
+                <a href="#features" class="btn btn-secondary btn-sm" data-tab="features" style="font-size: 11px; white-space: nowrap;">⚙️ Configure All ➔</a>
+              </div>
+            </div>
+
+            <!-- Features Overview Grid: Populated dynamically with each Monitoring Feature tile -->
+            <div class="features-overview-grid" id="dashboard-features-grid">
+              <div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: var(--text-muted);">
+                Loading monitoring features overview...
+              </div>
+            </div>
+          </div>
+
+          <!-- Mid Section: Flag Status & Quick Actions -->
+          <div class="dashboard-grid-2">
+            <!-- Flag Status Card -->
+            <div class="card" id="flag-status-card">
+              <div class="card-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">🚩</span>
+                  <h3 style="margin: 0;">Flag Half-Staff Monitor</h3>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="badge" id="flag-status-badge">Checking...</span>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-dashboard-flag-check" title="Trigger instant flag status check">⚡ Check Now</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-dashboard-flag-config" title="Configure incident rules and Wikipedia sources">⚙️ Rules & Sources</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="flag-visual-banner" style="display: none; padding: 12px 14px; border-radius: var(--radius-sm); margin-bottom: 12px;"></div>
+                <pre class="flag-text-box" id="flag-text-box">Loading flag incident status...</pre>
+
+                <!-- Expandable Recent Incidents Drawer -->
+                <div id="flag-incidents-container" style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 12px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                      <span>📋</span> Monitored Incidents Table
+                    </span>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-flag-table">Show Table</button>
+                  </div>
+                  <div id="flag-table-wrapper" style="display: none; max-height: 240px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                    <table class="data-table" id="flag-recent-table" style="font-size: 11.5px; width: 100%; margin: 0;">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Location</th>
+                          <th>Dead</th>
+                          <th>Injured</th>
+                          <th>Total</th>
+                          <th>Description</th>
+                          <th>Source</th>
+                        </tr>
+                      </thead>
+                      <tbody id="flag-recent-tbody">
+                        <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 12px;">No incident history recorded yet.</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Controls & Telegram Test -->
+            <div class="card">
+              <div class="card-header">
+                <h3>✈️ Telegram Integration</h3>
+                <span class="badge badge-primary" id="tg-chat-badge">Chat Configured</span>
+              </div>
+              <div class="card-body">
+                <p class="card-desc">Send immediate test alert or trigger scheduled notification digests.</p>
+                <div class="action-row">
+                  <input type="text" id="tg-test-input" class="input" placeholder="Custom test message..." value="Test message from HomeNotifications Web UI">
+                  <button id="btn-send-test-tg" class="btn btn-secondary">Send Test</button>
+                </div>
+                <div class="system-hints">
+                  <span>💡 Tip: Notifications can be switched between <code>immediate</code> and <code>batched</code> modes in Settings.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Devices Snapshot -->
+          <div class="card">
+            <div class="card-header">
+              <h3>⚡ Live Device Status Snapshot</h3>
+              <a href="#devices" class="btn-link" data-tab="devices">View Full Inventory ➔</a>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Device Name</th>
+                      <th>IP Address</th>
+                      <th>MAC Address</th>
+                      <th>Services</th>
+                      <th>Latency</th>
+                    </tr>
+                  </thead>
+                  <tbody id="snapshot-device-tbody">
+                    <tr><td colspan="6" class="text-center text-muted">Loading devices...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. MONITORED DEVICES TAB -->
+        <section id="panel-devices" class="tab-panel">
+          <div class="panel-toolbar">
+            <div class="toolbar-search">
+              <input type="text" id="devices-search-input" class="input search-input" placeholder="Search devices by name, IP, or tag...">
+            </div>
+            <div class="toolbar-actions">
+              <button id="btn-open-add-device" class="btn btn-primary">+ Add New Device</button>
+            </div>
+          </div>
+
+          <div class="card p-0">
+            <div class="table-responsive">
+              <table class="table" id="devices-table">
+                <thead>
+                  <tr>
+                    <th data-sort="status" class="sortable">Status <span class="sort-icon">⇅</span></th>
+                    <th data-sort="name" class="sortable">Name <span class="sort-icon">⇅</span></th>
+                    <th data-sort="ip" class="sortable">IP <span class="sort-icon">⇅</span></th>
+                    <th data-sort="mac" class="sortable">MAC <span class="sort-icon">⇅</span></th>
+                    <th data-sort="tags" class="sortable">Tags <span class="sort-icon">⇅</span></th>
+                    <th data-sort="monitors" class="sortable">Monitors <span class="sort-icon">⇅</span></th>
+                    <th data-sort="last_check" class="sortable">Last Checked <span class="sort-icon">⇅</span></th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="devices-tbody">
+                  <tr><td colspan="8" class="text-center text-muted">Loading device inventory...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. NETWORK DISCOVERY TAB -->
+        <section id="panel-discovery" class="tab-panel">
+          <div class="panel-toolbar">
+            <div class="toolbar-search">
+              <input type="text" id="discovery-search-input" class="input search-input" placeholder="Search discovered hosts by IP, MAC, vendor, or hostname...">
+            </div>
+            <div class="toolbar-actions">
+              <button id="btn-run-discovery-scan" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon-svg"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Trigger Subnet Scan</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="card p-0">
+            <div class="table-responsive">
+              <table class="table" id="discovery-table">
+                <thead>
+                  <tr>
+                    <th data-sort="online" class="sortable">State <span class="sort-icon">⇅</span></th>
+                    <th data-sort="ip" class="sortable">IP Address <span class="sort-icon">⇅</span></th>
+                    <th data-sort="mac" class="sortable">MAC Address <span class="sort-icon">⇅</span></th>
+                    <th data-sort="vendor" class="sortable">Vendor / Manufacturer <span class="sort-icon">⇅</span></th>
+                    <th data-sort="hostname" class="sortable">Resolved Hostname <span class="sort-icon">⇅</span></th>
+                    <th data-sort="is_configured" class="sortable">Classification <span class="sort-icon">⇅</span></th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="discovery-tbody">
+                  <tr><td colspan="7" class="text-center text-muted">Loading network ARP discovery...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. SERVICES & PORTS TAB -->
+        <section id="panel-services" class="tab-panel">
+          <div class="panel-toolbar">
+            <div class="toolbar-search">
+              <input type="text" id="services-search-input" class="input search-input" placeholder="Search services by name, device, type, or port...">
+            </div>
+            <div class="toolbar-actions">
+              <button id="btn-open-add-service" class="btn btn-primary">+ Add Monitored Service & Port</button>
+            </div>
+          </div>
+
+          <div class="card p-0">
+            <div class="table-responsive">
+              <table class="table" id="services-table">
+                <thead>
+                  <tr>
+                    <th data-sort="status" class="sortable">Health <span class="sort-icon">⇅</span></th>
+                    <th data-sort="service_name" class="sortable">Service Name <span class="sort-icon">⇅</span></th>
+                    <th data-sort="device_name" class="sortable">Device <span class="sort-icon">⇅</span></th>
+                    <th data-sort="port" class="sortable">Type & Port <span class="sort-icon">⇅</span></th>
+                    <th data-sort="latency_ms" class="sortable">Response Time <span class="sort-icon">⇅</span></th>
+                    <th data-sort="message" class="sortable">Status / Diagnostics <span class="sort-icon">⇅</span></th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="services-tbody">
+                  <tr><td colspan="7" class="text-center text-muted">Loading services...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. SYSTEM RESOURCES TAB -->
+        <section id="panel-resources" class="tab-panel">
+          <div class="panel-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 style="font-size: 18px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>🖥️</span> System Resources & Process Breakdown
+              </h2>
+              <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                Live telemetry and process breakdown (RAM & CPU utilization) for monitored Linux servers
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button class="btn btn-secondary btn-sm" id="btn-refresh-resources" style="display: flex; align-items: center; gap: 6px;">
+                <span id="resources-refresh-icon">🔄</span> Refresh Telemetry
+              </button>
+            </div>
+          </div>
+          <div id="resources-cards-container" class="resources-grid">
+            <div class="card"><div class="card-body text-center text-muted">Loading system telemetry...</div></div>
+          </div>
+        </section>
+
+        <!-- 6. FEATURES & CONFIGURATION TAB -->
+        <section id="panel-features" class="tab-panel">
+          <!-- Telegram Settings & Pause Card -->
+          <div class="card" style="margin-bottom: 22px;" id="telegram-settings-card">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px;">✈️</span>
+                <div>
+                  <h3 style="margin: 0; font-size: 16px;">Telegram Bot Configuration</h3>
+                  <div class="card-desc" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Manage bot credentials, target chat ID, master alert toggle, and snooze / pause timers.</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="tg-live-badge" class="badge badge-success">Active</span>
+                <button id="btn-save-telegram" class="btn btn-primary btn-sm">Save Telegram Settings</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="tg-input-token">Bot Token</label>
+                  <div style="display: flex; gap: 6px;">
+                    <input type="password" id="tg-input-token" class="input" placeholder="e.g. 123456:ABC-DEF..." style="flex: 1;">
+                    <button type="button" id="btn-toggle-token-vis" class="btn btn-secondary btn-sm" title="Show/Hide token">👁️</button>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="tg-input-chatid">Target Chat ID</label>
+                  <input type="text" id="tg-input-chatid" class="input" placeholder="e.g. 6777957380">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="tg-select-parse-mode">Parse Mode</label>
+                  <select id="tg-select-parse-mode" class="select">
+                    <option value="HTML">HTML (Recommended)</option>
+                    <option value="MARKDOWN">Markdown</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Master Send Toggle and Pause Snooze Bar -->
+              <div style="background: var(--border-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <label class="switch">
+                    <input type="checkbox" id="tg-toggle-enabled" checked>
+                    <span class="slider round"></span>
+                  </label>
+                  <div>
+                    <strong style="font-size: 13px;">Enable Telegram Notifications</strong>
+                    <div style="font-size: 11px; color: var(--text-muted);">Master switch to allow or suppress all outbound Telegram messages.</div>
+                  </div>
+                </div>
+
+                <!-- Pause / Snooze Controls -->
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-size: 12px; color: var(--text-muted);">Pause Sends:</span>
+                  <button class="btn btn-secondary btn-sm btn-tg-pause" data-secs="900" title="Pause 15 minutes">15m</button>
+                  <button class="btn btn-secondary btn-sm btn-tg-pause" data-secs="3600" title="Pause 1 hour">1h</button>
+                  <button class="btn btn-secondary btn-sm btn-tg-pause" data-secs="14400" title="Pause 4 hours">4h</button>
+                  <button class="btn btn-secondary btn-sm btn-tg-pause" data-secs="28800" title="Pause 8 hours">8h</button>
+                  <button class="btn btn-secondary btn-sm btn-tg-pause" data-secs="86400" title="Pause 24 hours">24h</button>
+                  <button id="btn-tg-resume" class="btn btn-primary btn-sm" style="display: none;">▶ Resume Now</button>
+                </div>
+              </div>
+
+              <div id="tg-pause-banner" style="display: none; margin-top: 10px; font-size: 12px; color: var(--warning-text); background: rgba(210, 153, 34, 0.1); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid rgba(210, 153, 34, 0.3);">
+                ⏸️ <strong>Alerts Currently Paused:</strong> <span id="tg-pause-countdown">0m</span> remaining.
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Schedules & Fine-Tuning Card -->
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="margin: 0; font-size: 16px;">⚙️ Monitoring Features & Sub-Feature Controls</h3>
+                <div class="card-desc" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Organized into functional categories. Click any feature card or configure button to adjust settings in a popup.</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="features-summary-stats" class="badge badge-primary">Loading...</span>
+                <button id="btn-reload-features" class="btn btn-secondary btn-sm" title="Reload feature configurations">↻ Refresh</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Toolbar: Search & Quick Functional Category Filters -->
+              <div class="features-toolbar">
+                <div class="features-search-bar">
+                  <input type="text" id="features-search-input" class="input search-input" placeholder="🔍 Search features, keywords, or sub-options (e.g. UPS, Ping, Wi-Fi, SSH)...">
+                </div>
+                <div class="features-filter-chips" id="features-filter-chips">
+                  <!-- Generated dynamically: All, Active, Inactive, Category chips -->
+                </div>
+              </div>
+
+              <!-- Main Grouped & Filtered Features Container -->
+              <div class="features-container" id="features-config-list">
+                <!-- Dynamically populated with categorized feature cards and popup triggers -->
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: ADD / EDIT DEVICE -->
+  <div class="modal-overlay" id="device-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Add Monitored Device</h3>
+        <button class="modal-close" id="btn-close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="device-form">
+          <input type="hidden" id="form-dev-original-id">
+          <div class="form-group">
+            <label for="form-dev-id">Device ID (unique slug)</label>
+            <input type="text" id="form-dev-id" class="input" placeholder="e.g. storage-nas" required>
+          </div>
+          <div class="form-group">
+            <label for="form-dev-name">Friendly Name</label>
+            <input type="text" id="form-dev-name" class="input" placeholder="e.g. Synology NAS" required>
+          </div>
+          <div class="form-group">
+            <label for="form-dev-ip">IP Address</label>
+            <input type="text" id="form-dev-ip" class="input" placeholder="e.g. 192.168.1.50" required>
+          </div>
+          <div class="form-group">
+            <label for="form-dev-mac">MAC Address (optional)</label>
+            <input type="text" id="form-dev-mac" class="input" placeholder="e.g. 00:11:22:33:44:55">
+          </div>
+          <div class="form-group">
+            <label for="form-dev-tags">Tags (comma-separated)</label>
+            <input type="text" id="form-dev-tags" class="input" placeholder="e.g. storage, server, backup">
+          </div>
+          <div style="display: flex; gap: 14px; align-items: center; margin-top: 8px; margin-bottom: 12px;">
+            <div class="form-group checkbox-group" style="margin-bottom: 0;">
+              <input type="checkbox" id="form-dev-ping" checked>
+              <label for="form-dev-ping">Enable Ping Reachability</label>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <label for="form-dev-ping-timeout" style="font-size: 11px; margin-bottom: 0; color: var(--text-muted);">Timeout:</label>
+              <input type="number" step="0.5" id="form-dev-ping-timeout" class="input" value="2.0" min="0.5" max="10" style="width: 70px; padding: 4px 6px;">
+            </div>
+          </div>
+
+          <!-- Remote SSH Telemetry Section -->
+          <div style="border-top: 1px solid var(--border-color); margin: 16px 0; padding-top: 12px;">
+            <div class="form-group checkbox-group" style="margin-bottom: 10px;">
+              <input type="checkbox" id="form-dev-ssh-enabled">
+              <label for="form-dev-ssh-enabled"><strong>Remote SSH Telemetry</strong> (CPU, RAM, Disks)</label>
+            </div>
+            <div id="form-dev-ssh-fields" style="display: none; padding-left: 10px; border-left: 2px solid var(--primary); margin-top: 10px;">
+              <div class="form-group">
+                <label for="form-dev-ssh-user">SSH Username</label>
+                <input type="text" id="form-dev-ssh-user" class="input" placeholder="e.g. admin or pferland">
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="form-dev-ssh-port">SSH Port</label>
+                  <input type="number" id="form-dev-ssh-port" class="input" placeholder="22" value="22">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                  <label for="form-dev-ssh-key">Private Key Path</label>
+                  <input type="text" id="form-dev-ssh-key" class="input" placeholder="~/.ssh/id_rsa">
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 10px;">
+                <label for="form-dev-ssh-systemd">Systemd Services to Monitor (comma-separated)</label>
+                <input type="text" id="form-dev-ssh-systemd" class="input" placeholder="e.g. ssh, nginx (or leave blank)">
+                <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 3px;">Monitors Linux systemd daemon status (<code>systemctl is-active</code>) over SSH.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-device">Save Device</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT SERVICE & PORT -->
+  <div class="modal-overlay" id="service-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="service-modal-title">Add Monitored Service & Port</h3>
+        <button class="modal-close" id="btn-close-service-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="service-form" novalidate>
+          <input type="hidden" id="form-srv-original-name">
+          <div class="form-group">
+            <label for="form-srv-device">Target Device</label>
+            <select id="form-srv-device" class="input" required style="width: 100%;">
+              <!-- Populated dynamically with configured devices -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-srv-type">Check Protocol / Type</label>
+            <select id="form-srv-type" class="input" style="width: 100%;">
+              <option value="tcp">TCP Port (Socket Connection)</option>
+              <option value="http">HTTP Web Endpoint</option>
+              <option value="https">HTTPS Secure Web Endpoint</option>
+              <option value="systemd">systemd (Remote Linux Service)</option>
+            </select>
+          </div>
+          <div class="form-group" id="form-srv-discovered-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="form-srv-discovered" style="margin-bottom: 0;">Discovered Services on Host</label>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-discovered-services" title="Scan host for running services and listening ports" style="padding: 2px 8px; font-size: 11px;">🔄 Scan Host</button>
+            </div>
+            <select id="form-srv-discovered" class="input" style="width: 100%;">
+              <option value="">-- Select a discovered service --</option>
+            </select>
+            <div id="form-srv-discovery-status" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">
+              Select a discovered service above to auto-fill details, or customize below.
+            </div>
+          </div>
+          <div class="form-group" id="form-srv-name-group">
+            <label for="form-srv-name">Service Name</label>
+            <input type="text" id="form-srv-name" class="input" placeholder="e.g. Plex, Web Admin, SSH, MySQL" required>
+          </div>
+          <div class="form-group" id="form-srv-port-group">
+            <label for="form-srv-port">Port Number</label>
+            <input type="number" id="form-srv-port" class="input" placeholder="e.g. 80, 443, 22, 3306, 8080" min="1" max="65535" required>
+          </div>
+          <div id="form-srv-http-options" style="display: none;">
+            <div class="form-group">
+              <label for="form-srv-hostname">Domain / Hostname (Virtual Host / SNI)</label>
+              <input type="text" id="form-srv-hostname" class="input" placeholder="e.g. app.mydomain.com (optional)">
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">
+                Specify domain/hostname to test against this host IP (supports multiple domains on the same server).
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="form-srv-path">HTTP Path</label>
+              <input type="text" id="form-srv-path" class="input" placeholder="e.g. / or /api/health" value="/">
+            </div>
+            <div class="form-group">
+              <label for="form-srv-status">Expected Status Code</label>
+              <input type="number" id="form-srv-status" class="input" placeholder="200" value="200">
+            </div>
+            <div class="form-group" id="form-srv-ssl-group">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal; margin-bottom: 0;">
+                <input type="checkbox" id="form-srv-check-ssl" checked>
+                <span>🔒 Monitor TLS / SSL Certificate Expiration</span>
+              </label>
+              <div style="font-size: 11px; color: var(--text-muted); margin-left: 24px; margin-top: 2px;">
+                Track SSL certificate validity and receive alerts before expiration.
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="form-srv-timeout">Timeout (seconds)</label>
+            <input type="number" step="0.5" id="form-srv-timeout" class="input" placeholder="3.0" value="3.0" min="0.5" max="30">
+          </div>
+          
+          <div class="test-probe-box" style="margin-top: 10px; margin-bottom: 16px; padding: 12px; background: var(--border-subtle); border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-test-service-probe">⚡ Test Port Now</button>
+            <span id="service-probe-result" class="mono" style="font-size: 12px; color: var(--text-muted);">Ready to test</span>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-service-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-service-submit">Save Service</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIGURE FEATURE & SUB-FEATURE CONTROLS -->
+  <div class="modal-overlay" id="feature-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span id="feature-modal-icon" class="feature-icon-badge" style="font-size: 20px; padding: 4px 8px;">⚙️</span>
+          <div>
+            <h3 id="feature-modal-title" style="margin: 0; font-size: 16px;">Configure Feature</h3>
+            <div id="feature-modal-desc" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></div>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-close-feature-modal" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <form id="feature-form">
+          <input type="hidden" id="form-feat-name">
+          
+          <!-- Master Switch & Core Scheduling Box -->
+          <div style="background: var(--border-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+              <div>
+                <strong style="font-size: 13px; display: block;">Feature Operational State</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">Enable or disable background task execution</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label class="switch" style="margin-bottom: 0;">
+                  <input type="checkbox" id="form-feat-enabled">
+                  <span class="slider round"></span>
+                </label>
+                <span id="form-feat-enabled-label" style="font-size: 12px; font-weight: 600; min-width: 45px;">Active</span>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="form-feat-interval">Check Interval (seconds)</label>
+                <input type="number" id="form-feat-interval" class="input" min="5" max="604800" required style="width: 100%;">
+                <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-top: 3px;">Frequency feature executes</span>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="form-feat-mode">Notification Mode</label>
+                <select id="form-feat-mode" class="input" style="width: 100%;">
+                  <option value="immediate">Immediate (Real-Time)</option>
+                  <option value="batched">Batched Digest</option>
+                  <option value="on_change">On State Change Only</option>
+                  <option value="periodic">Periodic Report</option>
+                  <option value="never">Never (Silent)</option>
+                </select>
+                <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-top: 3px;">How alerts are dispatched</span>
+              </div>
+            </div>
+
+            <!-- Batch interval input (shown when mode === 'batched') -->
+            <div id="form-feat-batch-group" class="form-group" style="display: none; margin-top: 12px; margin-bottom: 0; padding-top: 10px; border-top: 1px dashed var(--border-color);">
+              <label for="form-feat-batch-interval">Batch Digest Interval (seconds)</label>
+              <input type="number" id="form-feat-batch-interval" class="input" min="30" max="86400" value="300" style="width: 100%;">
+              <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-top: 3px;">How frequently batched notifications are compiled and sent</span>
+            </div>
+          </div>
+
+          <!-- Sub-Feature Controls Section -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <h4 style="margin: 0; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                <span>⚙️</span> Sub-Feature Controls & Triggers
+              </h4>
+              <span id="form-feat-suboptions-count" class="badge badge-primary" style="font-size: 11px;"></span>
+            </div>
+            <div id="feature-modal-suboptions" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Populated dynamically with sub-options -->
+            </div>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-feature-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-feature-modal">Save Configuration</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: INTERNET SPEED & LATENCY TEST -->
+  <div class="modal-overlay" id="speedtest-modal">
+    <div class="modal modal-lg" style="max-width: 850px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="feature-icon-badge" style="font-size: 20px; padding: 4px 8px;">⚡</span>
+          <div>
+            <h3 style="margin: 0; font-size: 16px;">Internet Speed & Latency Test</h3>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+              Live WAN throughput analysis, multi-target latency tracking, and previous run comparison
+            </div>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-close-speedtest-modal" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+        
+        <!-- Live Action Banner -->
+        <div style="background: var(--border-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600;" id="speedtest-status-headline">Ready for Speed & Latency Test</div>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;" id="speedtest-status-sub">Measures WAN bandwidth, ping, and target latency across configured hostnames/IPs.</div>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-run-speedtest-modal" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; font-weight: 600;">
+            <span id="speedtest-btn-icon">⚡</span>
+            <span id="speedtest-btn-text">Run Test Now</span>
+          </button>
+        </div>
+
+        <!-- Comparison Cards Grid (Recent vs Previous) -->
+        <div id="speedtest-comparison-container">
+          <!-- Populated dynamically: Side-by-Side Recent vs Previous Results -->
+        </div>
+
+        <!-- Latency Targets Breakdown Table -->
+        <div style="margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h4 style="margin: 0; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <span>🎯</span> Multi-Target Latency Tracking
+            </h4>
+            <span style="font-size: 11px; color: var(--text-muted);" id="speedtest-targets-count">0 targets</span>
+          </div>
+          <div class="table-container" style="margin-bottom: 18px;">
+            <table class="table" style="font-size: 12.5px;" id="speedtest-targets-table">
+              <thead>
+                <tr>
+                  <th>Target Host / IP</th>
+                  <th>Status</th>
+                  <th>Most Recent Latency</th>
+                  <th>Last Result</th>
+                  <th>Difference</th>
+                </tr>
+              </thead>
+              <tbody id="speedtest-targets-tbody">
+                <tr><td colspan="5" class="text-center text-muted">No test results recorded yet. Click "Run Test Now" above.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Speedtest Configuration Accordion / Section -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; user-select: none;" id="speedtest-config-toggle">
+            <h4 style="margin: 0; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <span>⚙️</span> Speedtest & Latency Configuration
+            </h4>
+            <span style="font-size: 12px; color: var(--primary); font-weight: 500;" id="speedtest-config-toggle-icon">▼ Show Settings</span>
+          </div>
+          <form id="speedtest-settings-form" style="display: none; background: var(--border-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="st-cfg-provider">Speedtest Engine / Provider</label>
+                <select id="st-cfg-provider" class="input" style="width: 100%;">
+                  <option value="ookla">Ookla (Speedtest.net - Worldwide Servers)</option>
+                  <option value="cloudflare">Cloudflare Anycast Edge CDN</option>
+                </select>
+                <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-top: 2px;">Ookla tests download, upload, and latency against dedicated speed servers.</span>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="st-cfg-server-id">Ookla Server ID / Location (Optional)</label>
+                <div style="display: flex; gap: 6px;">
+                  <input type="text" id="st-cfg-server-id" class="input" placeholder="e.g. 45705 (blank = auto-select closest)" style="flex: 1;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-discover-speedtest-servers" style="white-space: nowrap;">🔍 Find Servers</button>
+                </div>
+                <div id="st-servers-dropdown-container" style="display: none; margin-top: 6px;">
+                  <select id="st-cfg-servers-select" class="input" style="width: 100%; font-size: 11.5px;"></select>
+                </div>
+                <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-top: 2px;">Pick a specific nearby Ookla server or leave blank for auto.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="st-cfg-latency-targets">Latency Test Targets (IPs or Hostnames)</label>
+              <input type="text" id="st-cfg-latency-targets" class="input" placeholder="e.g. 1.1.1.1, 8.8.8.8, 9.9.9.9, router.local, google.com" value="1.1.1.1, 8.8.8.8, 9.9.9.9">
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">
+                Specify comma-separated IPs or hostnames. Latency will be measured and compared against each target on every run.
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="st-cfg-min-download">Min Download (Mbps)</label>
+                <input type="number" step="1" id="st-cfg-min-download" class="input" value="25.0">
+                <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-top: 2px;">Threshold for alert</span>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="st-cfg-min-upload">Min Upload (Mbps)</label>
+                <input type="number" step="1" id="st-cfg-min-upload" class="input" value="5.0">
+                <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-top: 2px;">Threshold for alert</span>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="st-cfg-max-latency">Max Latency (ms)</label>
+                <input type="number" step="1" id="st-cfg-max-latency" class="input" value="120.0">
+                <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-top: 2px;">Threshold for alert</span>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; margin-bottom: 0;">
+                <input type="checkbox" id="st-cfg-alert-degraded" checked>
+                <span>Alert Telegram when connection speed or latency degrades</span>
+              </label>
+              <button type="submit" class="btn btn-primary btn-sm" id="btn-save-speedtest-settings">💾 Save Speedtest Settings</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+      <div class="modal-actions" style="padding: 12px 20px; background: var(--bg-main); border-top: 1px solid var(--border-color);">
+        <button type="button" class="btn btn-secondary" id="btn-close-speedtest-footer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Device Process Breakdown Modal -->
+  <div class="modal-overlay" id="process-modal">
+    <div class="modal modal-lg" style="max-width: 960px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="feature-icon-badge" style="font-size: 20px; padding: 4px 8px;">⚙️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 16px;" id="process-modal-title">Resource Breakdown & Processes</h3>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;" id="process-modal-subtitle">
+              Detailed inspection of processes consuming RAM and CPU
+            </div>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-close-process-modal" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+        <!-- Top Stats Banner -->
+        <div style="background: var(--border-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+          <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+            <div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600;">CPU Load (1m)</div>
+              <div style="font-size: 16px; font-weight: 700; margin-top: 2px;" id="process-modal-cpu-load">—</div>
+            </div>
+            <div style="border-left: 1px solid var(--border-color); padding-left: 20px;">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600;">Memory Utilization</div>
+              <div style="font-size: 16px; font-weight: 700; margin-top: 2px;" id="process-modal-mem-stats">—</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-refresh-processes-live" style="display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 13px; font-weight: 600;">
+            <span id="process-modal-refresh-icon">🔄</span>
+            <span>Refresh Live Processes</span>
+          </button>
+        </div>
+
+        <!-- Controls: Tab Pills and Filter Input -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+          <div class="pill-group" style="display: flex; gap: 6px;">
+            <button type="button" class="btn btn-sm btn-secondary active" id="btn-tab-procs-cpu" style="font-weight: 600;">
+              🔥 Top CPU Processes
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-tab-procs-mem" style="font-weight: 600;">
+              💾 Top RAM Processes
+            </button>
+          </div>
+          <div style="min-width: 250px; flex: 1; max-width: 380px;">
+            <input type="text" id="input-filter-processes" class="form-control form-control-sm" placeholder="Filter processes (command, PID, user)..." style="width: 100%;">
+          </div>
+        </div>
+
+        <!-- Processes Table -->
+        <div class="table-responsive">
+          <table class="table" id="table-modal-processes" style="font-size: 12.5px;">
+            <thead>
+              <tr>
+                <th style="width: 75px;">PID</th>
+                <th style="width: 130px;">User</th>
+                <th style="width: 100px;">% CPU</th>
+                <th style="width: 100px;">% RAM</th>
+                <th>Process / Command</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-modal-processes">
+              <tr><td colspan="5" class="text-center text-muted">No processes loaded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="padding: 12px 20px; background: var(--bg-main); border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" id="btn-close-process-modal-bottom">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
