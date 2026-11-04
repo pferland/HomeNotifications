@@ -2,10 +2,6 @@
 # HomeNotifications Configuration File (config.ini.sample)
 # ==============================================================================
 
-[DEFAULT]
-TOKEN = "0000000000:AAaaaaaaaaaa-bbbbbbbbbbb-cccccccccc"
-CHATID = 0000000000
-
 [telegram]
 # Bot token obtained from Telegram @BotFather
 bot_token = 0000000000:AAaaaaaaaaaa-bbbbbbbbbbb-cccccccccc

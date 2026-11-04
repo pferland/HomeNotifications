@@ -81,10 +81,6 @@ curl -sS https://bootstrap.pypa.io/pip/3.9/get-pip.py | .venv/bin/python
 
 #### Application Configuration (`config.ini`)
 ```ini
-[DEFAULT]
-token = "YOUR_TELEGRAM_BOT_TOKEN"
-chatid = YOUR_TELEGRAM_CHAT_ID
-
 [telegram]
 bot_token = "YOUR_TELEGRAM_BOT_TOKEN"
 chat_id = YOUR_TELEGRAM_CHAT_ID
