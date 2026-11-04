@@ -36,6 +36,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }, duration);
   }
 
+  // Global 401 Unauthorized handling for API requests
+  const originalFetch = window.fetch;
+  window.fetch = async (...args) => {
+    const response = await originalFetch(...args);
+    if (response.status === 401) {
+      const url = args[0] ? (typeof args[0] === 'string' ? args[0] : args[0].url) : '';
+      if (!url.includes('/auth/user')) {
+        showToast('Session expired or unauthorized. Redirecting to login...', 2500);
+        setTimeout(() => {
+          window.location.href = `/auth/login?redirect_to=${encodeURIComponent(window.location.pathname + window.location.hash)}`;
+        }, 1500);
+      }
+    }
+    return response;
+  };
+
+  async function initAuthProfile() {
+    try {
+      const res = await fetch('/auth/user');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          const badge = document.getElementById('auth-user-badge');
+          const nameEl = document.getElementById('auth-user-name');
+          if (badge && nameEl) {
+            nameEl.textContent = data.user.name || data.user.email || data.user.username || 'User';
+            badge.style.display = 'inline-flex';
+          }
+        }
+      }
+    } catch (e) {
+      // Ignore background profile fetch failure
+    }
+  }
+
   // Modals & Forms
   const deviceModal = document.getElementById('device-modal');
   const deviceForm = document.getElementById('device-form');
@@ -4549,5 +4584,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadServices();
   loadResources();
   loadFeatures();
+  initAuthProfile();
   resetTimer();
 });

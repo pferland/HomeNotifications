@@ -104,6 +104,11 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon-svg"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             <span>Check All Now</span>
           </button>
+          <div id="auth-user-badge" class="user-profile-badge" style="display: none; align-items: center; gap: 8px; margin-left: 8px; padding-left: 12px; border-left: 1px solid var(--border-color);">
+            <span class="user-avatar" title="Signed In" style="font-size: 16px;">👤</span>
+            <span id="auth-user-name" class="user-name" style="font-size: 13px; font-weight: 500; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+            <a href="/auth/logout" class="btn btn-secondary btn-sm" id="btn-auth-logout" title="Sign out of HomeNotifications" style="padding: 4px 10px; font-size: 12px; text-decoration: none;">Logout</a>
+          </div>
         </div>
       </header>
 

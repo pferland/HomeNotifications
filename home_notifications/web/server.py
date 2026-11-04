@@ -11,10 +11,13 @@ import logging
 import os
 import re
 import time
+import urllib.parse
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import yaml
 from aiohttp import web
+
+from home_notifications.auth import AuthManager
 
 from home_notifications.config import AppConfig, DeviceConfig, ServiceCheckConfig, SSHMonitorConfig, load_config
 from home_notifications.features.device_monitor import DeviceMonitorFeature
@@ -33,6 +36,8 @@ from home_notifications.monitors.ssh import SSHMonitor
 from home_notifications.state import StateManager
 
 logger = logging.getLogger(__name__)
+
+AUTH_USER_KEY = getattr(web, "RequestKey", web.AppKey)("user")
 
 
 class WebServer:
@@ -70,12 +75,69 @@ class WebServer:
         self.ups_feature = ups_feature
         self.night_owl_feature = night_owl_feature
 
-        self.app = web.Application()
+        self.auth_manager = AuthManager(self.config.auth)
+        self.app = web.Application(middlewares=[self._auth_middleware])
         self.runner: web.AppRunner | None = None
         self.site: web.TCPSite | None = None
         self.start_time = time.time()
 
         self._setup_routes()
+
+    @web.middleware
+    async def _auth_middleware(self, request: web.Request, handler) -> web.Response:
+        """Enforces OIDC session or Bearer token authentication for WebUI and REST APIs."""
+        if not self.config.auth.enabled:
+            request[AUTH_USER_KEY] = None
+            return await handler(request)
+
+        path = request.path
+
+        # Public routes exempt from auth checks
+        if (
+            path.startswith("/static/")
+            or path in ("/auth/login", "/auth/callback", "/auth/logout")
+            or path == "/favicon.ico"
+        ):
+            return await handler(request)
+
+        # Webhook token authentication bypass for /api/webhook/notify
+        if path == "/api/webhook/notify":
+            token = request.headers.get("X-Webhook-Token") or request.query.get("token")
+            if token and self.webhook_feature and self.webhook_feature.validate_token(token):
+                request[AUTH_USER_KEY] = {"sub": "webhook", "type": "webhook"}
+                return await handler(request)
+
+        # 1. Check Session Cookie (for WebUI and browser requests)
+        cookie_name = self.config.auth.cookie_name
+        session_cookie = request.cookies.get(cookie_name)
+        user = None
+        if session_cookie:
+            user = self.auth_manager.verify_session_token(session_cookie)
+
+        # 2. Check Bearer / API token header (for REST API and service requests)
+        if not user:
+            auth_header = request.headers.get("Authorization") or request.headers.get("X-API-Key")
+            if auth_header:
+                user = await self.auth_manager.verify_bearer_token(auth_header)
+
+        if user:
+            request[AUTH_USER_KEY] = user
+            return await handler(request)
+
+        # Handle unauthenticated requests:
+        if path.startswith("/api/"):
+            return web.json_response(
+                {
+                    "error": "Unauthorized",
+                    "message": "Valid authentication required. Provide an active session cookie or Bearer token.",
+                },
+                status=401,
+            )
+
+        # WebUI browser request: redirect to OIDC login
+        redirect_target = request.path_qs
+        login_url = f"/auth/login?redirect_to={urllib.parse.quote(redirect_target)}"
+        raise web.HTTPFound(login_url)
 
     def _setup_routes(self) -> None:
         web_dir = Path(__file__).resolve().parent
@@ -93,6 +155,13 @@ class WebServer:
             return web.Response(text="Management UI template missing", status=404)
 
         self.app.router.add_get("/", index_handler)
+
+        # Authentication Routes
+        self.app.router.add_get("/auth/login", self.auth_login)
+        self.app.router.add_get("/auth/callback", self.auth_callback)
+        self.app.router.add_get("/auth/logout", self.auth_logout)
+        self.app.router.add_post("/auth/logout", self.auth_logout)
+        self.app.router.add_get("/auth/user", self.auth_get_user)
 
         # REST APIs
         self.app.router.add_get("/api/status", self.api_status)
@@ -136,6 +205,123 @@ class WebServer:
         self.app.router.add_post("/api/cisco/check", self.api_check_cisco)
         self.app.router.add_post("/api/ups/check", self.api_check_ups)
         self.app.router.add_post("/api/night_owl/check", self.api_check_night_owl)
+
+    # --- Authentication Handlers ---
+
+    async def auth_login(self, request: web.Request) -> web.Response:
+        """Initiate OIDC authentication flow by redirecting to the IdP."""
+        if not self.config.auth.enabled:
+            return web.HTTPFound("/")
+
+        session_cookie = request.cookies.get(self.config.auth.cookie_name)
+        if session_cookie and self.auth_manager.verify_session_token(session_cookie):
+            dest = request.query.get("redirect_to", "/")
+            return web.HTTPFound(dest)
+
+        redirect_to = request.query.get("redirect_to", "/")
+        try:
+            auth_url = await self.auth_manager.get_authorization_url(return_to=redirect_to)
+            raise web.HTTPFound(auth_url)
+        except web.HTTPException:
+            raise
+        except Exception as e:
+            logger.error("Failed to generate OIDC authorization URL: %s", e)
+            return web.Response(
+                text=f"Authentication Configuration Error: {e}",
+                status=500,
+                content_type="text/plain",
+            )
+
+    async def auth_callback(self, request: web.Request) -> web.Response:
+        """Handle OIDC authorization code callback from the Identity Provider."""
+        if not self.config.auth.enabled:
+            return web.HTTPFound("/")
+
+        error = request.query.get("error")
+        error_desc = request.query.get("error_description", error)
+        if error:
+            logger.warning("OIDC authentication returned error: %s (%s)", error, error_desc)
+            return web.Response(
+                text=f"Authentication Failed: {error_desc}",
+                status=400,
+                content_type="text/plain",
+            )
+
+        code = request.query.get("code")
+        state = request.query.get("state")
+        if not code or not state:
+            return web.Response(
+                text="Missing code or state parameter in callback",
+                status=400,
+                content_type="text/plain",
+            )
+
+        try:
+            result = await self.auth_manager.exchange_code(code, state)
+        except PermissionError as pe:
+            logger.warning("OIDC authorization access denied: %s", pe)
+            return web.Response(
+                text=f"Access Denied: {pe}",
+                status=403,
+                content_type="text/plain",
+            )
+        except Exception as e:
+            logger.error("OIDC code exchange failed: %s", e, exc_info=True)
+            return web.Response(
+                text=f"Authentication Error: {e}",
+                status=500,
+                content_type="text/plain",
+            )
+
+        user = result["user"]
+        return_to = result.get("return_to") or "/"
+        # Prevent open redirect vulnerabilities
+        if not return_to.startswith("/") or return_to.startswith("//"):
+            return_to = "/"
+
+        session_token = self.auth_manager.create_session_token(user)
+        response = web.HTTPFound(return_to)
+        response.set_cookie(
+            name=self.config.auth.cookie_name,
+            value=session_token,
+            max_age=self.config.auth.cookie_max_age,
+            httponly=True,
+            secure=self.config.auth.cookie_secure,
+            samesite="Lax",
+            path="/",
+        )
+        raise response
+
+    async def auth_logout(self, request: web.Request) -> web.Response:
+        """Log out the current user by deleting the session cookie and redirecting to IdP or login."""
+        end_session_url = await self.auth_manager.get_logout_url()
+        target_url = end_session_url if end_session_url else "/auth/login"
+
+        response = web.HTTPFound(target_url)
+        response.del_cookie(self.config.auth.cookie_name, path="/")
+        response.headers["Clear-Site-Data"] = '"cookies", "storage"'
+        raise response
+
+    async def auth_get_user(self, request: web.Request) -> web.Response:
+        """Return the profile of the currently authenticated user."""
+        user = request.get(AUTH_USER_KEY, request.get("user"))
+        if user:
+            return web.json_response({
+                "authenticated": True,
+                "auth_enabled": self.config.auth.enabled,
+                "user": {
+                    "sub": user.get("sub", ""),
+                    "name": user.get("name", ""),
+                    "email": user.get("email", ""),
+                    "username": user.get("username", ""),
+                    "groups": user.get("groups", []),
+                },
+            })
+        return web.json_response({
+            "authenticated": False,
+            "auth_enabled": self.config.auth.enabled,
+            "user": None,
+        })
 
     # --- API Handlers ---
 
@@ -1805,6 +1991,8 @@ class WebServer:
 
     async def stop(self) -> None:
         """Stop the web server."""
+        if hasattr(self, "auth_manager"):
+            await self.auth_manager.close()
         if self.runner:
             await self.runner.cleanup()
             logger.info("Management UI server stopped.")

@@ -13,6 +13,15 @@ An extensible, production-ready Python Telegram bot, home automation daemon, and
   - **Comprehensive Feature Manager**: Dedicated UI tab to tweak every feature module and sub-option, including check intervals, alert thresholds, and notification modes (`immediate`, `batched`, `on_change`, `periodic`, `never`).
   - **Live Telegram Bot Controls**: Configure Bot Token, Chat ID, and Parse Mode on the fly. Includes Master On/Off switch, quick-snooze timers (15m, 1h, 4h, 8h, 24h), live countdown timer, and one-click notification resume.
 
+- 🔐 **OpenID Connect (OIDC) Authentication & API Security**:
+  - **Zero-Trust Web UI & API Protection**: Enforce authentication across both browser views and the REST API backend.
+  - **Identity Provider Compatibility**: Works with Authentik, Keycloak, Authelia, Google, Okta, Zitadel, and Microsoft Entra.
+  - **Seamless Browser Login Flow**: Unauthenticated browser visits automatically redirect to the IdP via the standard OIDC Authorization Code Flow.
+  - **Stateless Signed Session Cookies**: Secure HTTP-only cookies (`SameSite=Lax`, optional `Secure` flag for TLS) with automatic session expiry.
+  - **REST API Authentication**: Accepts either browser session cookies or `Authorization: Bearer <token>` / `X-API-Key: <token>` (OIDC JWTs or static API keys). Returns JSON `401 Unauthorized` for invalid or missing credentials.
+  - **Access Filtering**: Optional claim-based access controls for authorized email addresses or groups/roles.
+  - **Single Sign-Out**: `/auth/logout` clears local cookies, emits `Clear-Site-Data`, and redirects to the IdP's end-session endpoint.
+
 - 🤖 **Interactive Telegram Bot Commands**:
   - `/status` — System health, active features, queue status, and device counters.
   - `/devices` (or `/hosts`) — Real-time list of all monitored hosts and reachability.
@@ -94,6 +103,15 @@ log_level = INFO
 web_enabled = true
 web_host = 0.0.0.0
 web_port = 8096
+
+[auth]
+enabled = false
+issuer_url = https://auth.example.com
+client_id = homenotifications
+client_secret = replace_with_oidc_client_secret
+redirect_uri = http://localhost:8096/auth/callback
+cookie_secure = false
+api_tokens = 
 
 [feature:device_monitor]
 enabled = true

@@ -19,6 +19,29 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
+class OIDCConfig:
+    enabled: bool = False
+    issuer_url: str = ""
+    client_id: str = ""
+    client_secret: str = ""
+    redirect_uri: str = ""
+    scopes: List[str] = field(default_factory=lambda: ["openid", "profile", "email"])
+    authorization_endpoint: str = ""
+    token_endpoint: str = ""
+    jwks_uri: str = ""
+    userinfo_endpoint: str = ""
+    end_session_endpoint: str = ""
+    session_secret: str = ""
+    cookie_name: str = "hn_session"
+    cookie_secure: bool = False
+    cookie_max_age: int = 86400
+    api_tokens: List[str] = field(default_factory=list)
+    allowed_emails: List[str] = field(default_factory=list)
+    allowed_groups: List[str] = field(default_factory=list)
+    roles_claim: str = "groups"
+
+
+@dataclass
 class TelegramConfig:
     bot_token: str
     chat_id: int | str
@@ -147,12 +170,14 @@ class AppConfig:
         system: SystemConfig,
         features: Dict[str, FeatureConfig],
         devices: Dict[str, DeviceConfig],
+        auth: Optional[OIDCConfig] = None,
     ):
         self.base_dir = base_dir
         self.telegram = telegram
         self.system = system
         self.features = features
         self.devices = devices
+        self.auth = auth if auth is not None else OIDCConfig()
 
     def get_feature(self, name: str) -> FeatureConfig:
         return self.features.get(
@@ -454,7 +479,84 @@ def load_config(base_path: Optional[str | Path] = None) -> AppConfig:
                 options=feat_opts,
             )
 
-    # 4. Devices config (from YAML)
+    # 4. Auth (OIDC) config
+    auth_enabled = False
+    issuer_url = ""
+    client_id = ""
+    client_secret = ""
+    redirect_uri = ""
+    scopes = ["openid", "profile", "email"]
+    authorization_endpoint = ""
+    token_endpoint = ""
+    jwks_uri = ""
+    userinfo_endpoint = ""
+    end_session_endpoint = ""
+    session_secret = ""
+    cookie_name = "hn_session"
+    cookie_secure = False
+    cookie_max_age = 86400
+    api_tokens: List[str] = []
+    allowed_emails: List[str] = []
+    allowed_groups: List[str] = []
+    roles_claim = "groups"
+
+    if parser.has_section("auth"):
+        a_sec = parser["auth"]
+        auth_enabled = a_sec.getboolean("enabled", fallback=False)
+        issuer_url = a_sec.get("issuer_url", "").strip('"\'')
+        client_id = a_sec.get("client_id", "").strip('"\'')
+        client_secret = a_sec.get("client_secret", "").strip('"\'')
+        redirect_uri = a_sec.get("redirect_uri", "").strip('"\'')
+        scopes_raw = a_sec.get("scopes", "openid,profile,email").strip()
+        if scopes_raw:
+            scopes = [s.strip() for s in scopes_raw.split(",") if s.strip()]
+        authorization_endpoint = a_sec.get("authorization_endpoint", "").strip('"\'')
+        token_endpoint = a_sec.get("token_endpoint", "").strip('"\'')
+        jwks_uri = a_sec.get("jwks_uri", "").strip('"\'')
+        userinfo_endpoint = a_sec.get("userinfo_endpoint", "").strip('"\'')
+        end_session_endpoint = a_sec.get("end_session_endpoint", "").strip('"\'')
+        session_secret = a_sec.get("session_secret", "").strip('"\'')
+        cookie_name = a_sec.get("cookie_name", "hn_session").strip('"\'')
+        cookie_secure = a_sec.getboolean("cookie_secure", fallback=False)
+        cookie_max_age = a_sec.getint("cookie_max_age", fallback=86400)
+
+        api_tokens_raw = a_sec.get("api_tokens", "").strip()
+        if api_tokens_raw:
+            api_tokens = [t.strip() for t in api_tokens_raw.split(",") if t.strip()]
+
+        allowed_emails_raw = a_sec.get("allowed_emails", "").strip()
+        if allowed_emails_raw:
+            allowed_emails = [e.strip().lower() for e in allowed_emails_raw.split(",") if e.strip()]
+
+        allowed_groups_raw = a_sec.get("allowed_groups", "").strip()
+        if allowed_groups_raw:
+            allowed_groups = [g.strip() for g in allowed_groups_raw.split(",") if g.strip()]
+
+        roles_claim = a_sec.get("roles_claim", "groups").strip('"\'')
+
+    auth_cfg = OIDCConfig(
+        enabled=auth_enabled,
+        issuer_url=issuer_url,
+        client_id=client_id,
+        client_secret=client_secret,
+        redirect_uri=redirect_uri,
+        scopes=scopes,
+        authorization_endpoint=authorization_endpoint,
+        token_endpoint=token_endpoint,
+        jwks_uri=jwks_uri,
+        userinfo_endpoint=userinfo_endpoint,
+        end_session_endpoint=end_session_endpoint,
+        session_secret=session_secret,
+        cookie_name=cookie_name,
+        cookie_secure=cookie_secure,
+        cookie_max_age=cookie_max_age,
+        api_tokens=api_tokens,
+        allowed_emails=allowed_emails,
+        allowed_groups=allowed_groups,
+        roles_claim=roles_claim,
+    )
+
+    # 5. Devices config (from YAML)
     dev_path = base_dir / devices_file
     if not dev_path.exists():
         sample_dev = base_dir / f"{devices_file}.sample"
@@ -469,6 +571,7 @@ def load_config(base_path: Optional[str | Path] = None) -> AppConfig:
         system=system_cfg,
         features=features_cfg,
         devices=devices_cfg,
+        auth=auth_cfg,
     )
 
 

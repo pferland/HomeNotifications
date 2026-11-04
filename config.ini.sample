@@ -34,6 +34,59 @@ web_host = 0.0.0.0
 web_port = 8085
 
 # ==============================================================================
+# OpenID Connect (OIDC) Authentication
+#
+# Protects the Web Management UI and API Backend with OpenID Connect (OIDC).
+# Compatible with Keycloak, Authentik, Authelia, Google, Okta, Zitadel, etc.
+# ==============================================================================
+
+[auth]
+# Master switch to require authentication for WebUI and REST APIs
+enabled = false
+
+# OpenID Connect Discovery URL (Issuer URL)
+# Example Authentik: https://auth.example.com/application/o/homenotifications/
+# Example Keycloak:  https://auth.example.com/realms/homelab
+# Example Google:    https://accounts.google.com
+issuer_url = https://auth.example.com
+
+# OIDC Client Credentials obtained from your Identity Provider
+client_id = homenotifications
+client_secret = replace_with_oidc_client_secret
+
+# Redirect URI registered in your Identity Provider (must match exactly)
+redirect_uri = http://localhost:8085/auth/callback
+
+# Scopes requested from Identity Provider (comma-separated)
+scopes = openid,profile,email
+
+# Secret key used to encrypt/sign HTTP-only session cookies.
+# If left blank, a random 256-bit secret is generated at startup.
+session_secret = 
+
+# Session cookie settings
+cookie_name = hn_session
+cookie_secure = false  # Set to true in production behind HTTPS reverse proxy
+cookie_max_age = 86400
+
+# Optional manual endpoint overrides (if discovery endpoint is not used or custom)
+authorization_endpoint = 
+token_endpoint = 
+jwks_uri = 
+userinfo_endpoint = 
+end_session_endpoint = 
+
+# Optional static API tokens for programmatic REST API access (comma-separated).
+# Allows external scripts/curl to authenticate via 'Authorization: Bearer <token>' or 'X-API-Key: <token>'
+api_tokens = 
+
+# Optional access control filters (comma-separated)
+# Restricts access only to users with matching email addresses or group memberships
+allowed_emails = 
+allowed_groups = 
+roles_claim = groups
+
+# ==============================================================================
 # Features Configuration
 #
 # notify_mode options:
